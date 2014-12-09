@@ -4,7 +4,7 @@
   "description": "Duplex stream tunnelling (plus custom events)",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "tap ./test"
   },
   "repository": {
     "type": "git",
@@ -23,5 +23,8 @@
   "bugs": {
     "url": "https://github.com/natevw/streamplex/issues"
   },
-  "homepage": "https://github.com/natevw/streamplex"
+  "homepage": "https://github.com/natevw/streamplex",
+  "devDependencies": {
+    "tap": "^0.4.13"
+  }
 }
