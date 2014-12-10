@@ -2,7 +2,7 @@ var util = require('util'),
     stream = require('stream');
 
 
-var Framing = require("./framing.js");
+var framing = require("./framing.js");
 
 
 function Tunnel(opts) {
