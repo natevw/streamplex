@@ -1,6 +1,10 @@
 var util = require('util'),
     stream = require('stream');
 
+
+var Framing = require("./framing.js");
+
+
 function Tunnel(opts) {
     opts || (opts = {});
     stream.Duplex.call(this, {
