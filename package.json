@@ -4,7 +4,7 @@
   "description": "Duplex stream tunnelling (plus custom events)",
   "main": "index.js",
   "scripts": {
-    "test": "tap ./test"
+    "test": "tap ./test && tap -e colony ./test"
   },
   "repository": {
     "type": "git",
@@ -25,6 +25,6 @@
   },
   "homepage": "https://github.com/natevw/streamplex",
   "devDependencies": {
-    "tap": "^0.4.13"
+    "tap": "git+https://github.com/tcr/node-tap.git#4f96b1"
   }
 }
