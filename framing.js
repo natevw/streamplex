@@ -1,16 +1,16 @@
 var util = require('util'),
     stream = require('stream');
 
-function Framing() {
+function ReadFrames() {
     stream.Transform.call(this, {objectMode:true});
     
     this._expected = 0;
     this._chunks = [];
     this._chunks.byteLen = 0;
 }
-util.inherits(Framing, stream.Transform);
+util.inherits(ReadFrames, stream.Transform);
 
-Framing.prototype._transform = function(buf, enc, cb) {
+ReadFrames.prototype._transform = function (buf, _, cb) {
     this._chunks.push(buf);
     this._chunks.byteLen += buf.length;
     
@@ -38,9 +38,25 @@ Framing.prototype._transform = function(buf, enc, cb) {
     }
 };
 
-Framing.prototype._flush = function (cb) {
-    if (this._chunks.byteLen) cb(new Error("Unconsumed partial frame"));
+ReadFrames.prototype._flush = function (cb) {
+    if (this._chunks.byteLen) cb(new Error("Frame reader finished with unconsumed data!"));
     else cb();
 };
 
-module.exports = Framing;
+function WriteFrames() {
+    stream.Transform.call(this, {objectMode:true});
+}
+util.inherits(WriteFrames, stream.Transform);
+
+WriteFrames.prototype._transform = function (buf, _, cb) {
+    if (buf.length > 0xFFFF) cb(new Error("Frames must be 64KB or less!"));
+    var frame = Buffer(2+buf.length);
+    frame.writeUInt16BE(buf.length, 0);
+    buf.copy(frame, 2);   // TRADEOFF: do this copy, or push twice :-/
+    this.push(frame);
+    cb();
+};
+
+exports.ReadFrames = ReadFrames;
+exports.WriteFrames = WriteFrames;
+
