@@ -1,6 +1,6 @@
 {
   "name": "streamplex",
-  "version": "0.0.5",
+  "version": "0.5.0",
   "description": "Duplex stream tunnelling (plus custom events)",
   "main": "index.js",
   "scripts": {
