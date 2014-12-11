@@ -33,7 +33,15 @@ function Tunnel(opts) {
         var more = self.push(d);
         if (!more) self._messenger.pause();
     });
-    
+    self._messenger.on('end', function () {
+        self.push(null);
+    });
+    self._messenger.on('error', function (e) {
+        self.emit('error', e);
+    });
+    self.on('finish', function () {
+        self._messenger.sendNoMore();
+    });
 }
 util.inherits(Tunnel, stream.Duplex);
 

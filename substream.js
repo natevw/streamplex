@@ -15,14 +15,20 @@ function Substream(messenger, n, name) {
     
     var self = this;
     self.on('finish', function () {
-        self.sendJSON({type:'event', name:'end'});
+        self.sendJSON({event:'end'});
+    });
+    self.on('error', function (e) {
+        self.sendJSON({event:'error', message:e.message});
     });
     messenger.on('data:'+n, function (data) {
         self.push(data);
     });
     messenger.on('json:'+n, function (d) {
-        if (d.type === 'event') {
-            self.emit(d.name);
+        if (d.event === 'error') {
+            var e = new Error(d.message);
+            self.emit('error', d);
+        } else if (d.event === 'end') {
+            self.push(null);
         }
         // TODO: handle backpressure messages
     });

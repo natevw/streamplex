@@ -20,11 +20,14 @@ function Messenger(opts) {
         var chan = d.readUInt16BE(0),
             type = d.readUInt8(2),
             data = d.slice(3);
-        if (type === 0x01) {
+        if (type == 0x00) {
+            self.emit('data:'+chan, data);
+        } else if (type === 0x01) {
             var json = JSON.parse(data.toString());   // TODO: try/catch
             self.emit('json:'+chan, json);
         } else {
-            self.emit('data:'+chan, data);
+            //self.emit('error', new Error("Uknown message type: 0x"+(0x100+type).toString(16).slice(1)));
+            self.emit('error', new Error("Invalid data"));    // [multiplex test suite wants this exactly]
         }
         // NOTE: we could emit more general events too if desirable
         //self.emit('message', chan, data);
