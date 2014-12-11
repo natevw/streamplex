@@ -1,8 +1,10 @@
 var util = require('util'),
     stream = require('stream');
 
-function Substream(messenger, n) {
+function Substream(messenger, n, name) {
     stream.Duplex.call(this);
+    
+    this.meta = name;     // multiplex compatibility
     
     this.sendJSON = function (obj, cb) {
         return messenger.sendJSON(n, obj, cb);

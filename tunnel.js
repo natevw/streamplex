@@ -4,6 +4,8 @@ var util = require('util'),
 var Messenger = require("./messenger.js"),
     Substream = require("./substream.js");
 
+var _tmp = 1;     // HACK: compatibility w/'multiplex' test suite
+
 function Tunnel(opts) {
     opts || (opts = {});
     stream.Duplex.call(this, {
@@ -14,14 +16,14 @@ function Tunnel(opts) {
         encoding: null
     });
     
-    this._counter = ('n' in opts) ? opts.n : 1;
-    this._step = ('of' in opts) ? opts.of : 2;
+    this._counter = ('n' in opts) ? opts.n : _tmp++;
+    this._step = ('of' in opts) ? opts.of : 0xFF;
     
     var self = this;
     self._messenger = new Messenger();
     self._messenger.on('json:0', function (d) {
         if (d.type === 'stream') {
-            var stream = new Substream(this, d.sock);
+            var stream = new Substream(this, d.sock, d.name);
             self.emit('stream', stream, d.name);
         } else {
             console.warn("Unknown control message:", d);
@@ -51,7 +53,7 @@ Tunnel.prototype.createStream = function (name) {
         sock: sock,
         name: name
     });
-    return new Substream(this._messenger, sock);
+    return new Substream(this._messenger, sock, name);
 };
 
 module.exports = Tunnel;
