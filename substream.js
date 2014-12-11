@@ -12,10 +12,16 @@ function Substream(messenger, n) {
     };
     
     var self = this;
+    self.on('finish', function () {
+        self.sendJSON({type:'event', name:'end'});
+    });
     messenger.on('data:'+n, function (data) {
         self.push(data);
     });
     messenger.on('json:'+n, function (d) {
+        if (d.type === 'event') {
+            self.emit(d.name);
+        }
         // TODO: handle backpressure messages
     });
 }

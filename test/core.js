@@ -40,26 +40,26 @@ test("Stream creation", function (t) {
 test("Substream usage", function (t) {
   var tun1 = streamplex({n:1,of:2}),
       tun2 = streamplex({n:2,of:2});
-  tun1.pipe(tun2).pipe(tun1);
   
   t.plan(2);
   
-  var data = {a:'', b:''};
-  tun1.on('stream', function (substream, id) {
-      substream.on('data', function (d) {
-          data[id] += d.toString();
-          console.log("# %j", data);
-      });
-      substream.on('end', function () {
-          if (id === 'a') t.equal(data['a'], "Hello, world!");
-          else if (id === 'b') t.equal(data['a'], "The quick brown fox, what does it say?");
-          else t.fail("Bad stream id: "+id);
-      });
-  });
   var streamA = tun2.createStream('a'),
       streamB = tun2.createStream('b');
   streamA.write("Hello, ");
   streamB.write("The quick brown");
   streamA.end("world!");
   streamB.end(" fox, what does it say?");
+  tun1.pipe(tun2).pipe(tun1);
+  
+  var data = {a:'', b:''},
+      want = {a:"Hello, world!", b:"The quick brown fox, what does it say?"};
+  tun1.on('stream', function (substream, id) {
+      substream.on('data', function (d) {
+          data[id] += d.toString();
+      });
+      substream.on('end', function () {
+          t.equal(data[id], want[id]);
+      });
+  });
+  
 });
