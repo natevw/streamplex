@@ -34,7 +34,4 @@ test("Stream creation", function (t) {
       t.equal(id, 'second');
   });
   tun1.createStream('second');
-  
-  // above should all happen reasonably quickly
-  setTimeout(t.end.bind(t), 100);
 });
