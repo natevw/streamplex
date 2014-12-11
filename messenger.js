@@ -11,12 +11,12 @@ function Messenger(opts) {
     
     var self = this;
     self.on('finish', function () {
-console.log("messenger finish");
+        // no more incoming frames
         self._inbox.end();
     });
     
     self._inbox.on('data', function (d) {
-console.log("inbox data");
+        // incoming frame, parse as message
         var chan = d.readUInt16BE(0),
             type = d.readUInt8(2),
             data = d.slice(3);
@@ -31,18 +31,18 @@ console.log("inbox data");
         //self.emit('message:'+chan, data);
     });
     self._inbox.on('end', function () {
-console.log("inbox end");
-        self.emit('done');
+        // done *processing* incoming frames
+        self.emit('done');      // NOTE: this is our own custom event
     });
     self._inbox.on('error', bail);
     
     self._outbox.on('data', function (d) {
-console.log("outbox data");
+        // forward outgoing frames
         var more = self.push(d);
         if (!more) self._outbox.pause();
     });
     self._outbox.on('end', function () {
-console.log("outbox end");
+        // done forwarding outgoing frames
         self.push(null);
     });
     self._outbox.on('error', bail);
@@ -54,11 +54,11 @@ console.log("outbox end");
 }
 util.inherits(Messenger, stream.Duplex);
 
-Messenger.prototype._read = function (size) {
+Messenger.prototype._read = function (size) {               // outgoing frames
     this._outbox.resume();
 };
 
-Messenger.prototype._write = function (buf, enc, cb) {
+Messenger.prototype._write = function (buf, enc, cb) {      // incoming frames
     return this._inbox.write(buf, enc, cb);
 };
 
@@ -81,6 +81,7 @@ Messenger.prototype.sendJSON = function (chan, obj, cb) {
 };
 
 Messenger.prototype.sendNoMore = function () {
+    // custom way to end outgoing messaging (`this.end()` means none more *incoming*)
     this._outbox.end();
 };
 
