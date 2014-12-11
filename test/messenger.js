@@ -12,17 +12,19 @@ test("Messenger", function (t) {
     streamA.sendJSON(42, {thing:2});
     streamA.sendData(86, new Buffer("wrong"));
     streamA.sendData(42, new Buffer("world"));
+    streamA.sendNoMore();
     
     var objs = [], bufs = [];
+    streamB.resume();
     streamB.on('json:42', function (obj) { objs.push(obj); });
     streamB.on('data:42', function (buf) { bufs.push(buf); });
-    streamB.on('end', function () {
+    streamB.on('done', function () {
         t.equal(objs.length, 2);
         t.equal(objs[0].thing, 1);
         t.equal(objs[1].thing, 2);
         t.equal(bufs.length, 2);
-        t.equal(buffs[0].toString(), "hello");
-        t.equal(buffs[0].toString(), "world");
+        t.equal(bufs[0].toString(), "hello");
+        t.equal(bufs[1].toString(), "world");
         t.end();
     });
 });
