@@ -36,7 +36,7 @@ function Substream(messenger, n, name) {
 util.inherits(Substream, stream.Duplex);
 
 Substream.prototype._read = function (size) {
-    this.sendJSON({read:size});
+    //this.sendJSON({read:size});
 };
 Substream.prototype._write = function (buf, enc, cb) {
     this.sendData(buf, cb);
