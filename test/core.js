@@ -35,3 +35,31 @@ test("Stream creation", function (t) {
   });
   tun1.createStream('second');
 });
+
+
+test("Substream usage", function (t) {
+  var tun1 = streamplex(),
+      tun2 = streamplex();
+  tun1.pipe(tun2).pipe(tun1);
+  
+  t.plan(2);
+  
+  var data = {a:'', b:''};
+  tun1.on('stream', function (substream, id) {
+      substream.on('data', function (d) {
+          data[id] += d.toString();
+          console.log("# %j", data);
+      });
+      substream.on('end', function () {
+          if (id === 'a') t.equal(data['a'], "Hello, world!");
+          else if (id === 'b') t.equal(data['a'], "The quick brown fox, what does it say?");
+          else t.fail("Bad stream id: "+id);
+      });
+  });
+  var streamA = tun2.createStream('a'),
+      streamB = tun2.createStream('b');
+  streamA.write("Hello, ");
+  streamB.write("The quick brown");
+  streamA.end("world!");
+  streamB.end(" fox, what does it say?");
+});
