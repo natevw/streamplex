@@ -57,6 +57,6 @@ WriteFrames.prototype._transform = function (buf, _, cb) {
     cb();
 };
 
-exports.ReadFrames = ReadFrames;
-exports.WriteFrames = WriteFrames;
+exports.FrameReader = ReadFrames;
+exports.FrameWriter = WriteFrames;
 

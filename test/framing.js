@@ -2,7 +2,7 @@ var test = require('tap').test,
     framing = require("../framing.js");
 
 test("ReadFrames", function (t) {
-    var stream = new framing.ReadFrames();
+    var stream = new framing.FrameReader();
     
     stream.write(Buffer([0x00, 0x01, 0xFF]));
     stream.write(Buffer([0x00]));
@@ -30,8 +30,8 @@ test("ReadFrames", function (t) {
 });
 
 test("WriteFrames", function (t) {
-    var writer = new framing.WriteFrames(),
-        stream = new framing.ReadFrames();
+    var writer = new framing.FrameWriter(),
+        stream = new framing.FrameReader();
     
     writer.pipe(stream);
     writer.write(Buffer([0xFF]));
