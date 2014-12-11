@@ -9,7 +9,7 @@ var _tmp = 1;     // HACK: compatibility w/'multiplex' test suite
 function Tunnel(opts) {
     opts || (opts = {});
     stream.Duplex.call(this, {
-        highWaterMark: 0,
+        //highWaterMark: 0,
         // NOTE: settings below are node defaults, but important. (do not allow override!)
         objectMode: false,
         decodeStrings: true,
