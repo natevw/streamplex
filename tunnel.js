@@ -36,7 +36,7 @@ Tunnel.prototype._write = function (buf, enc, cb) {
 
 Tunnel.prototype.createStream = function (name) {
     var sock = 42;     // TODO
-    this._messenger.sendJSON({
+    this._messenger.sendJSON(0, {
         type: 'stream',
         sock: sock,
         name: name
