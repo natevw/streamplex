@@ -14,6 +14,9 @@ function Tunnel(opts) {
         encoding: null
     });
     
+    this._counter = ('n' in opts) ? opts.n - 1 : 0;
+    this._step = ('of' in opts) ? opts.of : 2;
+    
     var self = this;
     self._messenger = new Messenger();
     self._messenger.on('json:0', function (d) {
@@ -41,7 +44,8 @@ Tunnel.prototype._write = function (buf, enc, cb) {
 };
 
 Tunnel.prototype.createStream = function (name) {
-    var sock = 42;     // TODO
+    var sock = this._counter;
+    this._counter += this._step;
     this._messenger.sendJSON(0, {
         type: 'stream',
         sock: sock,

@@ -38,8 +38,8 @@ test("Stream creation", function (t) {
 
 
 test("Substream usage", function (t) {
-  var tun1 = streamplex(),
-      tun2 = streamplex();
+  var tun1 = streamplex({n:1,of:2}),
+      tun2 = streamplex({n:2,of:2});
   tun1.pipe(tun2).pipe(tun1);
   
   t.plan(2);
