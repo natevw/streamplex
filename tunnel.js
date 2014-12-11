@@ -14,7 +14,7 @@ function Tunnel(opts) {
         encoding: null
     });
     
-    this._counter = ('n' in opts) ? opts.n - 1 : 0;
+    this._counter = ('n' in opts) ? opts.n : 1;
     this._step = ('of' in opts) ? opts.of : 2;
     
     var self = this;
