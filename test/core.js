@@ -41,7 +41,7 @@ test("Substream usage", function (t) {
   var tun1 = streamplex({n:1,of:2}),
       tun2 = streamplex({n:2,of:2});
   
-  t.plan(2);
+  t.plan(4);
   
   var streamA = tun2.createStream('a'),
       streamB = tun2.createStream('b');
@@ -49,6 +49,7 @@ test("Substream usage", function (t) {
   streamB.write("The quick brown");
   streamA.end("world!");
   streamB.end(" fox, what does it say?");
+  streamA.remoteEmit('some_event', "thing1", {thing:2});
   tun1.pipe(tun2).pipe(tun1);
   
   var data = {a:'', b:''},
@@ -60,6 +61,9 @@ test("Substream usage", function (t) {
       substream.on('end', function () {
           t.equal(data[id], want[id]);
       });
+      substream.on('some_event', function (a, b) {
+          t.equal(a, "thing1");
+          t.equal(b.thing, 2);
+      });
   });
-  
 });

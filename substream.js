@@ -29,6 +29,9 @@ function Substream(messenger, n, name) {
             self.emit('error', d);
         } else if (d.event === 'end') {
             self.push(null);
+        } else if (d.event === 'custom') {
+            var args = [d.name].concat(d.args);
+            Substream.prototype.emit.apply(self, args);
         }
         // TODO: handle backpressure messages
     });
@@ -41,5 +44,12 @@ Substream.prototype._read = function (size) {
 Substream.prototype._write = function (buf, enc, cb) {
     this.sendData(buf, cb);
 };
+
+
+Substream.prototype.remoteEmit = function (name) {
+    var args = Array.prototype.slice.call(arguments, 1);
+    this.sendJSON({event:'custom', name:name, args:args});
+};
+
 
 module.exports = Substream;
