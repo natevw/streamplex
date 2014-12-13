@@ -10,3 +10,6 @@ module.exports = function (opts, cb) {
     if (cb) tunnel.on('stream', cb);
     return tunnel;
 };
+
+exports.A_SIDE = {n:1,of:2};
+exports.B_SIDE = {n:2,of:2};

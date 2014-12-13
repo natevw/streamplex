@@ -6,7 +6,8 @@ var Messenger = require("./messenger.js"),
 
 var _tmp = 1;     // HACK: compatibility w/'multiplex' test suite
 
-function Tunnel(opts) {
+function Tunnel(side, opts) {
+    side || (side = {n:_tmp++, of:0xFF});     // HACK: 'multiplex' test suite compat, DO NOT RELY!
     opts || (opts = {});
     stream.Duplex.call(this, {
         //highWaterMark: 0,
@@ -16,8 +17,8 @@ function Tunnel(opts) {
         encoding: null
     });
     
-    this._counter = ('n' in opts) ? opts.n : _tmp++;
-    this._step = ('of' in opts) ? opts.of : 0xFF;
+    this._counter = side.n;
+    this._step = side.of;
     
     var self = this;
     self._messenger = new Messenger();
