@@ -5,7 +5,7 @@ var test = require('tap').test,
 test("Basic API", function (t) {
   t.equal(typeof streamplex, 'function', "Module exports a function.");
   
-  var tunnel = streamplex();
+  var tunnel = streamplex(streamplex.A_SIDE);
   t.ok(tunnel instanceof stream.Duplex, "Function creates a tunnel instance.");
   t.equal(typeof tunnel.createStream, 'function', "Tunnel has a `.createStream()` method.");
   
@@ -17,8 +17,8 @@ test("Basic API", function (t) {
 
 
 test("Stream creation", function (t) {
-  var tun1 = streamplex(),
-      tun2 = streamplex();
+  var tun1 = streamplex(streamplex.A_SIDE),
+      tun2 = streamplex(streamplex.B_SIDE);
   tun1.pipe(tun2).pipe(tun1);
   
   t.plan(4);
@@ -38,8 +38,8 @@ test("Stream creation", function (t) {
 
 
 test("Substream usage", function (t) {
-  var tun1 = streamplex({n:1,of:2}),
-      tun2 = streamplex({n:2,of:2});
+  var tun1 = streamplex(streamplex.A_SIDE),
+      tun2 = streamplex(streamplex.B_SIDE);
   
   t.plan(4);
   
