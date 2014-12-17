@@ -17,6 +17,12 @@ function Tunnel(side, opts) {
         encoding: null
     });
     
+    
+    var SubstreamClass = (opts.subclass) ? Substream.customClass(opts.subclass) : Substream;
+    this._createStream = function (sock, name) {
+        return new SubstreamClass(this._messenger, sock, name);
+    };
+    
     this._counter = side.n;
     this._step = side.of;
     
@@ -24,7 +30,7 @@ function Tunnel(side, opts) {
     self._messenger = new Messenger();
     self._messenger.on('json:0', function (d) {
         if (d.type === 'stream') {
-            var stream = new Substream(this, d.sock, d.name);
+            var stream = self._createStream(d.sock, d.name);
             self.emit('stream', stream, d.name);
         } else {
             console.warn("Unknown control message:", d);
@@ -62,7 +68,7 @@ Tunnel.prototype.createStream = function (name) {
         sock: sock,
         name: name
     });
-    return new Substream(this._messenger, sock, name);
+    return this._createStream(sock, name);
 };
 
 module.exports = Tunnel;

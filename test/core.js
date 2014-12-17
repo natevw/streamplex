@@ -1,4 +1,5 @@
 var test = require('tap').test,
+    util = require('util'),
     stream = require('stream'),
     streamplex = require("../");
 
@@ -67,3 +68,20 @@ test("Substream usage", function (t) {
       });
   });
 });
+
+test("Custom subclasses", function (t) {
+  function Custom() {
+      stream.Duplex.call(this);
+  }
+  util.inherits(Custom, stream.Duplex);
+  
+  var tunnel = streamplex(streamplex.A_SIDE, {subclass:Custom});
+  
+  var substream = tunnel.createStream();
+  t.ok(substream instanceof Custom, "Create method returns custom instance.");
+  t.equal(typeof substream._write, 'function', "stream.Duplex _write provided for custom instance.");
+  t.equal(typeof substream._read, 'function', "stream.Duplex _read provided for custom instance.");
+  
+  t.end();
+});
+

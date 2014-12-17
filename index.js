@@ -1,12 +1,12 @@
 var Tunnel = require("./tunnel.js");
 
-module.exports = function (opts, cb) {
+module.exports = function (side, opts, cb) {
     if (typeof opts === 'function') {
         cb = opts;
         opts = null;
     }
     
-    var tunnel = new Tunnel(opts);
+    var tunnel = new Tunnel(side, opts);
     if (cb) tunnel.on('stream', cb);
     return tunnel;
 };

@@ -44,17 +44,18 @@ You can think of streamplex as "multiplex with extra features". In fact, the ini
 
 ## API
 
-* `tunnel = streamplex(side, [options,] [callback])` — this module exports a single function, which returns one end of a tunnel. This local "tunnel" instance is a duplex stream that inputs and outputs its internal protocol as an opaque flow of bytes. Connect the local instance to another streamplex instance, typically over some other duplex transport: `socket.pipe(tunnel).pipe(socket)` on each end. Pass `streamplex.A_SIDE` or `streamplex.B_SIDE` such that the local instance considers itself on the opposite `side` of the remote instance — by convention you could assign side A to the centralized "server" or peer-to-peer "initiator" and side B to the "client"/"receiver", just make sure both sides aren't using the same value. (See "channel numbering" internals to learn why.) If you provide a `callback` it will be registered as a `'stream'` event listener as a convenience. Any `options` argument is currently ignored.
+* `tunnel = streamplex(side, [options,] [callback])` — this module exports a single function, which returns one end of a tunnel. This local "tunnel" instance is a duplex stream that inputs and outputs its internal protocol as an opaque flow of bytes. Connect the local instance to another streamplex instance, typically over some other duplex transport: `socket.pipe(tunnel).pipe(socket)` on each end. Pass `streamplex.A_SIDE` or `streamplex.B_SIDE` such that the local instance considers itself on the opposite `side` of the remote instance — by convention you could assign side A to the centralized "server" or peer-to-peer "initiator" and side B to the "client"/"receiver", just make sure both sides aren't using the same value. (See "channel numbering" internals to learn why.) If you provide a `callback` it will be registered as a `'stream'` event listener as a convenience. See below for `options`.
 * `tunnel.on('stream', handler)` — event emitted as `handler(substream, name)` after the remote side has created a stream. `substream` is a [stream.Duplex](http://nodejs.org/api/stream.html#stream_class_stream_duplex_1) instance and `name` is the name if one was provided.
 * `substream = tunnel.createStream([name])` — returns a [stream.Duplex](http://nodejs.org/api/stream.html#stream_class_stream_duplex_1) instance ready for use. Data piped in to this substream will be read from its remote counterpart; data written remotely will flow out of this substream. `name` is optional, and need not be unique — it is simply a string that can be provided to the `'stream'` event handler.
 * `substream.remoteEmit(name, …)` — the remote counterpart of this substream is an [events.EventEmitter](http://nodejs.org/api/events.html#events_class_events_eventemitter), and calling this method locally causes the `name`d event to fire there with any provided arguments. Note that all additional arguments passed in `…` must be JSON-serializable.
 
 That's pretty much it. Substreams (and the tunnel itself) should emit all the usual stream events — note that any `'error'` is fatal within its context — replace any substream that errors, or connect a new pair of tunnel instances if one of them should error.
 
+## Streamplex tunnel options
 
-custom events  [priority data](http://www.slideshare.net/engineerrd/tcp-immediate-data-transfer)–like ability to push custom events on a stream.
+The following tunnel-level configuration may be provided:
 
-
+* `subclass` — normally, the substreams created will inherit directly from `stream.Duplex`. If you wish to provide an intermediary class (such as one providing `net.Socket`-like behavior) you may do so via e.g. `tunnel = streamplex(side, {subclass:CustomClass})`. Note that your custom class must still eventually inherit from `stream.Duplex`; however, streamplex will provide the requisite `._write` and `._read` implementations for you. Note also that the substreams emitted on the remote side will *not* inherit from the local subclass, unless you provide the same subclass implementation as an option when instantiating the tunnel on that side. (There is no harm in omitting, or providing a different subclass, on one side or the other.)
 
 
 ## Internals
@@ -68,6 +69,9 @@ Divided into three layers:
 So really this "should" be split into three separate [tiny and very hungry](http://en.wikipedia.org/wiki/The_Very_Hungry_Caterpillar) npm package-pillars but ain't nobody got time for that…
 
 Please ignore these [early protocol notes](https://gist.github.com/natevw/f7934b0f0ef49d8254b6) which I am linking to from here for my own convenience — that document may or may not match what is currently/eventually ever implemented.
+
+future note: custom events should ideally have [priority data](http://www.slideshare.net/engineerrd/tcp-immediate-data-transfer)–like behavior, i.e. 'json' messages sent despite backpressure and (if practical) ahead of any 'blob' messages.
+
 
 ### Channel numbering
 
