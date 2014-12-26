@@ -2,10 +2,10 @@ var util = require('util'),
     stream = require('stream');
 
 function factory(SuperClass) {        // (SuperClass is expected to inherit from stream.Duplex)
-    function Substream(messenger, n, name) {
-        SuperClass.call(this);
+    function Substream(messenger, n, opts) {
+        SuperClass.call(this, opts);
         
-        this.meta = name;     // multiplex compatibility
+        this.meta = opts && opts.name;     // multiplex compatibility
         
         this.sendJSON = function (obj, cb) {
             return messenger.sendJSON(n, obj, cb);
@@ -45,8 +45,8 @@ function factory(SuperClass) {        // (SuperClass is expected to inherit from
         this.sendData(buf, cb);
     };
     
-    Substream.prototype.remoteEmit = function (name) {
-        if (typeof name !== 'string') throw Error("Cannot emit remotely without a valid event name.");
+    Substream.prototype.remoteEmit = function (eventName) {
+        if (typeof eventName !== 'string') throw Error("Cannot emit remotely without a valid event name.");
         var args = Array.prototype.slice.call(arguments);
         this.sendJSON({event:'custom', emitArgs:args});
     };

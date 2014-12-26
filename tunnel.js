@@ -19,8 +19,8 @@ function Tunnel(side, opts) {
     
     
     var SubstreamClass = (opts.subclass) ? Substream.customClass(opts.subclass) : Substream;
-    this._createStream = function (sock, name) {
-        return new SubstreamClass(this._messenger, sock, name);
+    this._createStream = function (sock, opts) {
+        return new SubstreamClass(this._messenger, sock, opts);
     };
     
     this._counter = side.n;
@@ -60,15 +60,17 @@ Tunnel.prototype._write = function (buf, enc, cb) {
     return this._messenger.write(buf, enc, cb);
 };
 
-Tunnel.prototype.createStream = function (name) {
+Tunnel.prototype.createStream = function (opts) {
+    if (typeof opts === 'string') opts = {name:opts};
+    else if (!opts) opts = {};
     var sock = this._counter;
     this._counter += this._step;
     this._messenger.sendJSON(0, {
         type: 'stream',
         sock: sock,
-        name: name
+        name: opts.name
     });
-    return this._createStream(sock, name);
+    return this._createStream(sock, opts);
 };
 
 module.exports = Tunnel;
