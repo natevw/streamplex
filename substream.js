@@ -13,6 +13,10 @@ function factory(SuperClass) {        // (SuperClass is expected to inherit from
         this.sendData = function (buf, cb) {
             return messenger.sendData(n, buf, cb);
         };
+        this._removeListeners = function () {
+            messenger.removeAllListeners('data:'+n);
+            messenger.removeAllListeners('json:'+n);
+        };
         
         var self = this;
         self.on('finish', function () {
@@ -49,6 +53,11 @@ function factory(SuperClass) {        // (SuperClass is expected to inherit from
         if (typeof eventName !== 'string') throw Error("Cannot emit remotely without a valid event name.");
         var args = Array.prototype.slice.call(arguments);
         this.sendJSON({event:'custom', emitArgs:args});
+    };
+    
+    Substream.prototype.destroy = function () {
+      this._removeListeners();
+      this.end();
     };
     
     return Substream;
