@@ -1,6 +1,6 @@
 var Tunnel = require("./tunnel.js");
 
-module.exports = function (side, opts, cb) {
+module.exports = exports = function (side, opts, cb) {
     if (typeof opts === 'function') {
         cb = opts;
         opts = null;

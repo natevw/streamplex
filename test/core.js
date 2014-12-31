@@ -5,6 +5,8 @@ var test = require('tap').test,
 
 test("Basic API", function (t) {
   t.equal(typeof streamplex, 'function', "Module exports a function.");
+  t.ok('A_SIDE' in streamplex, "A-side constant is defined");
+  t.ok('B_SIDE' in streamplex, "B-side constant is defined");
   
   var tunnel = streamplex(streamplex.A_SIDE);
   t.ok(tunnel instanceof stream.Duplex, "Function creates a tunnel instance.");
