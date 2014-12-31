@@ -32,6 +32,8 @@ function Tunnel(side, opts) {
         if (d.type === 'stream') {
             var stream = self._createStream(d.sock, d.name);
             self.emit('stream', stream, d.name);
+        } else if (d.type === 'message') {
+            self.emit('message', d.object);
         } else {
             console.warn("Unknown control message:", d);
         }
@@ -71,6 +73,13 @@ Tunnel.prototype.createStream = function (opts) {
         name: opts.name
     });
     return this._createStream(sock, opts);
+};
+
+Tunnel.prototype.sendMessage = function (obj) {
+    this._messenger.sendJSON(0, {
+      type: 'message',
+      object: obj
+    });
 };
 
 module.exports = Tunnel;

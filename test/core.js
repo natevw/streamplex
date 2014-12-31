@@ -37,6 +37,19 @@ test("Stream creation", function (t) {
   tun1.createStream('second');
 });
 
+test("Message sending", function (t) {
+  var tun1 = streamplex(streamplex.A_SIDE),
+      tun2 = streamplex(streamplex.B_SIDE);
+  tun1.pipe(tun2).pipe(tun1);
+  
+  t.plan(2);
+  
+  tun1.on('message', function (d) {
+      t.equal(typeof d, 'object');
+      t.equal(d.key, "value");
+  });
+  tun2.sendMessage({key:"value"});
+});
 
 test("Substream usage", function (t) {
   var tun1 = streamplex(streamplex.A_SIDE),

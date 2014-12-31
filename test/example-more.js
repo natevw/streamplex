@@ -26,6 +26,12 @@ function node1(incoming, outgoing) {
             stream.remoteEmit('LOUDER', val.toUpperCase().replace("?","!"));
         });
     });
+    
+    // streamplex tunnels can also send/receive arbitrary JSON
+    plex1.sendMessage(42);
+    plex1.on('message', function (obj) {
+        console.log("# …tunnel-level", obj.note);
+    });
 }
 
 function node2(incoming, outgoing) {
@@ -43,9 +49,11 @@ function node2(incoming, outgoing) {
         var anonStream = plex2.createStream();
         anonStream.remoteEmit('some_custom_event', "any jsonifiable arguments?");
         anonStream.on('LOUDER', function (response) {
-            console.log("# custom events with:", response);
+            console.log("# substream-level custom events with:", response);
             anonStream.write("huzzah!");
         });
+        
+        plex2.sendMessage({note:"JSON messages too!"});
     });
 }
 
