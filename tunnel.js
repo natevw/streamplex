@@ -17,16 +17,22 @@ function Tunnel(side, opts) {
         encoding: null
     });
     
-    
-    var SubstreamClass = (opts.subclass) ? Substream.customClass(opts.subclass) : Substream;
-    this._createStream = function (sock, opts) {
-        return new SubstreamClass(this._messenger, sock, opts);
-    };
-    
     this._counter = side.n;
     this._step = side.of;
     
     var self = this;
+    var SubstreamClass = (opts.subclass) ? Substream.customClass(opts.subclass) : Substream,
+        _substreamCount = 0;
+    this._createStream = function (sock, opts) {
+        var substream = new SubstreamClass(this._messenger, sock, opts);
+        _substreamCount += 1;
+        substream.on('close', function () {
+            _substreamCount -= 1;
+            if (!_substreamCount) self.emit('inactive');
+        });
+        return substream;
+    };
+    
     self._messenger = new Messenger();
     self._messenger.on('json:0', function (d) {
         if (d.type === 'stream') {

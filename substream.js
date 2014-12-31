@@ -13,19 +13,29 @@ function factory(SuperClass) {        // (SuperClass is expected to inherit from
         this.sendData = function (buf, cb) {
             return messenger.sendData(n, buf, cb);
         };
-        this._removeListeners = function () {
+        function _removeListeners() {
             messenger.removeAllListeners('data:'+n);
             messenger.removeAllListeners('json:'+n);
         };
         
-        var self = this;
+        var self = this,
+            _ended = false,
+            _finished = false;
         self.on('finish', function () {
             self.sendJSON({event:'end'});
+            _finished = true;
+            if (_ended) self.emit('close');
         });
+        self.on('end', function () {
+            _ended = true;
+            if (_finished) self.emit('close');
+        });
+        self.on('close', _removeListeners);
         self.on('error', function (e) {
             self.sendJSON({event:'error', message:e.message});
         });
         messenger.on('data:'+n, function (data) {
+            if (this._destroyed) return;
             self.push(data);
         });
         messenger.on('json:'+n, function (d) {
@@ -56,7 +66,8 @@ function factory(SuperClass) {        // (SuperClass is expected to inherit from
     };
     
     Substream.prototype.destroy = function () {
-      this._removeListeners();
+      this._destroyed = true;
+      this.push(null);
       this.end();
     };
     

@@ -53,6 +53,36 @@ test("Message sending", function (t) {
   tun2.sendMessage({key:"value"});
 });
 
+test("Tunnel inactivity", function (t) {
+  var tun1 = streamplex(streamplex.A_SIDE),
+      tun2 = streamplex(streamplex.B_SIDE);
+  tun1.pipe(tun2).pipe(tun1);
+  
+  t.plan(2);
+  
+  tun1.on('stream', function (substream) {
+      substream.resume();     // must consume events…
+      substream.end();
+  });
+  tun1.on('inactive', function () {
+      t.ok("inactive event fired on first tunnel");
+  });
+  var s1 = tun1.createStream();
+  s1.resume();
+  s1.end();
+  
+  tun2.on('stream', function (substream) {
+      substream.resume();
+      substream.end();
+  });
+  tun2.on('inactive', function () {
+      t.ok("inactive event fired on second tunnel");
+  });
+  var s2 = tun2.createStream();
+  s2.resume();
+  s2.end();
+});
+
 test("Substream usage", function (t) {
   var tun1 = streamplex(streamplex.A_SIDE),
       tun2 = streamplex(streamplex.B_SIDE);
