@@ -130,3 +130,21 @@ test("Custom subclasses", function (t) {
   t.end();
 });
 
+test("Error forwarding", function (t) {
+  var tun1 = streamplex(streamplex.A_SIDE),
+      tun2 = streamplex(streamplex.B_SIDE);
+  tun1.pipe(tun2).pipe(tun1);
+  
+  t.plan(3);
+  
+  var _prevError;
+  tun1.on('stream', function (stream) {
+      stream.on('error', function (e) {
+          t.ok(e instanceof Error, "Proper instance");
+          t.equal(e.message, "MY MESSAGE");
+          t.notOk(_prevError, "Error received only once");
+          _prevError = e;
+      });
+  });
+  tun2.createStream().emit('error', {message:"MY MESSAGE"});
+});

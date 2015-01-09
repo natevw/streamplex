@@ -32,6 +32,7 @@ function factory(SuperClass) {        // (SuperClass is expected to inherit from
         });
         self.on('close', _removeListeners);
         self.on('error', function (e) {
+            if (e._fromRemote) return;
             self.sendJSON({event:'error', message:e.message});
         });
         messenger.on('data:'+n, function (data) {
@@ -41,7 +42,8 @@ function factory(SuperClass) {        // (SuperClass is expected to inherit from
         messenger.on('json:'+n, function (d) {
             if (d.event === 'error') {
                 var e = new Error(d.message);
-                self.emit('error', d);
+                e._fromRemote = true;
+                self.emit('error', e);
             } else if (d.event === 'end') {
                 self.push(null);
             } else if (d.event === 'custom') {
