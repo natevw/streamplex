@@ -52,7 +52,7 @@ function Messenger(opts) {
     
     function bail(e) {
         // TODO: what inbox/outbox shutdown?
-        self.emit(e);
+        self.emit('error', e);
     }
 }
 util.inherits(Messenger, stream.Duplex);

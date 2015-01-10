@@ -88,4 +88,9 @@ Tunnel.prototype.sendMessage = function (obj) {
     });
 };
 
+Tunnel.prototype.destroy = function (e) {
+    if (e) e._fromDestroy = true;
+    this._messenger.emit('_destroy', e);
+};
+
 module.exports = Tunnel;

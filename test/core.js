@@ -135,16 +135,24 @@ test("Error forwarding", function (t) {
       tun2 = streamplex(streamplex.B_SIDE);
   tun1.pipe(tun2).pipe(tun1);
   
-  t.plan(3);
+  t.plan(7);
   
-  var _prevError;
-  tun1.on('stream', function (stream) {
+  tun1.on('stream', function (stream, expectedMessage) {
+      var _prevError;
+      stream.resume();
       stream.on('error', function (e) {
           t.ok(e instanceof Error, "Proper instance");
-          t.equal(e.message, "MY MESSAGE");
+          t.equal(e.message, expectedMessage);
           t.notOk(_prevError, "Error received only once");
           _prevError = e;
+          stream.destroy();
       });
+      stream.on('pls_destroy', function () {
+        tun1.destroy(new Error("my message"));
+      });
+  }).on('inactive', function () {
+      t.pass("tunnel goes inactive");
   });
-  tun2.createStream().emit('error', {message:"MY MESSAGE"});
+  tun2.createStream("MY MESSAGE").emit('error', {message:"MY MESSAGE"});
+  tun2.createStream("my message").remoteEmit('pls_destroy');
 });

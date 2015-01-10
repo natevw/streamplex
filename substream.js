@@ -16,7 +16,8 @@ function factory(SuperClass) {        // (SuperClass is expected to inherit from
         function _removeListeners() {
             messenger.removeAllListeners('data:'+n);
             messenger.removeAllListeners('json:'+n);
-        };
+            messenger.removeListener('_destroy', messengerDestroyed);
+        }
         
         var self = this,
             _ended = false,
@@ -32,7 +33,7 @@ function factory(SuperClass) {        // (SuperClass is expected to inherit from
         });
         self.on('close', _removeListeners);
         self.on('error', function (e) {
-            if (e._fromRemote) return;
+            if (e._fromRemote || e._fromDestroy) return;
             self.sendJSON({event:'error', message:e.message});
         });
         messenger.on('data:'+n, function (data) {
@@ -51,6 +52,11 @@ function factory(SuperClass) {        // (SuperClass is expected to inherit from
             }
             // TODO: handle backpressure messages
         });
+        messenger.on('_destroy', messengerDestroyed);
+        function messengerDestroyed(e) {
+          if (e && !self._destroyed) self.emit('error', e);
+          self.destroy();
+        }
     }
     util.inherits(Substream, SuperClass);
     
