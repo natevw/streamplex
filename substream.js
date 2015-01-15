@@ -54,7 +54,7 @@ function factory(SuperClass) {        // (SuperClass is expected to inherit from
         });
         messenger.on('_destroy', messengerDestroyed);
         function messengerDestroyed(e) {
-          if (e && !self._destroyed) self.emit('error', e);
+          if (e) self.emit('error', e);
           self.destroy();
         }
     }
