@@ -52,7 +52,7 @@ function Tunnel(side, opts) {
         self.emit('error', e);
     });
     self.on('finish', function () {
-        self._messenger.sendNoMore();
+        self._messenger.end();
     });
 }
 util.inherits(Tunnel, stream.Duplex);
