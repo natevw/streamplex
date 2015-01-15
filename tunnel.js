@@ -9,13 +9,10 @@ var _tmp = 1;     // HACK: compatibility w/'multiplex' test suite
 function Tunnel(side, opts) {
     side || (side = {n:_tmp++, of:0xFF});     // HACK: 'multiplex' test suite compat, DO NOT RELY!
     opts || (opts = {});
-    stream.Duplex.call(this, {
-        //highWaterMark: 0,
-        // NOTE: settings below are node defaults, but important. (do not allow override!)
-        objectMode: false,
-        decodeStrings: true,
-        encoding: null
-    });
+    opts.objectMode = false;
+    opts.decodeStrings = true;
+    opts.encoding = null;
+    stream.Duplex.call(this, opts);
     
     this._counter = side.n;
     this._step = side.of;
