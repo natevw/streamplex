@@ -22,6 +22,7 @@ function Tunnel(side, opts) {
         _substreamCount = 0;
     this._createStream = function (sock, opts) {
         var substream = new SubstreamClass(this._messenger, sock, opts);
+        if (!_substreamCount) self.emit('active');
         _substreamCount += 1;
         substream.on('close', function () {
             _substreamCount -= 1;
@@ -88,6 +89,8 @@ Tunnel.prototype.sendMessage = function (obj) {
 Tunnel.prototype.destroy = function (e) {
     if (e) e._fromDestroy = true;
     this._messenger.emit('_destroy', e);
+    delete e._fromDestroy;
+    this.emit('close');
 };
 
 module.exports = Tunnel;

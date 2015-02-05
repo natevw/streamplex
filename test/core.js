@@ -58,8 +58,11 @@ test("Tunnel inactivity", function (t) {
       tun2 = streamplex(streamplex.B_SIDE);
   tun1.pipe(tun2).pipe(tun1);
   
-  t.plan(2);
+  t.plan(4);
   
+  tun1.on('active', function () {
+      t.ok("active event fired on first tunnel");
+  });
   tun1.on('stream', function (substream) {
       substream.resume();     // must consume events…
       substream.end();
@@ -71,6 +74,9 @@ test("Tunnel inactivity", function (t) {
   s1.resume();
   s1.end();
   
+  tun2.on('active', function () {
+      t.ok("active event fired on second tunnel");
+  });
   tun2.on('stream', function (substream) {
       substream.resume();
       substream.end();
