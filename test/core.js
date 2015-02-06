@@ -15,6 +15,8 @@ test("Basic API", function (t) {
   var substream = tunnel.createStream();
   t.ok(substream instanceof stream.Duplex, "Create method returns a duplex stream.");
   
+  tunnel.destroy();     // make sure this don't explode
+  
   t.end();
 });
 
