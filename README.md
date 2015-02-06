@@ -44,18 +44,24 @@ You can think of streamplex as "multiplex with extra features". In fact, the ini
 
 ## API
 
+Main tunnel methods/events:
+
 * `tunnel = streamplex(side, [options,] [callback])` — this module exports a single function, which returns one end of a tunnel. This local "tunnel" instance is a duplex stream that inputs and outputs its internal protocol as an opaque flow of bytes. Connect the local instance to another streamplex instance, typically over some other duplex transport: `socket.pipe(tunnel).pipe(socket)` on each end. Pass `streamplex.A_SIDE` or `streamplex.B_SIDE` such that the local instance considers itself on the opposite `side` of the remote instance — by convention you could assign side A to the centralized "server" or peer-to-peer "initiator" and side B to the "client"/"receiver", just make sure both sides aren't using the same value. (See "channel numbering" internals to learn why.) If you provide a `callback` it will be registered as a `'stream'` event listener as a convenience. See below for `options`.
-* `tunnel.on('active', handler)` — emitted as `handler()` whenever there are no currently-open streams and a new one is created (including those emitted from the remote side). This tells you when the tunnel has substreams in use.
-* `tunnel.on('inactive', handler)` — emitted as `handler()` whenever the last currently-open stream is closed. You could use this to tear down an on-demand tunnel; it tells you when the tunnel no longer has substreams in use. (Your app could still be sending/receiving messages over the tunnel itself, however.)
-* `tunnel.on('message', handler)` — event emitted as `handler(message)` after the remote side sends a message. 
+* Event: `'stream'` — emitted with parameters `(substream, name)` after the remote side has created a stream. `substream` is a [stream.Duplex](http://nodejs.org/api/stream.html#stream_class_stream_duplex_1) instance and `name` is the name if one was provided.
+* Event: `'active'` — emitted as whenever there are no currently-open streams and a new one is created (including those emitted from the remote side). This tells you when the tunnel has substreams in use.
+* Event: `'inactive'` — emitted whenever the last currently-open stream is closed. You could use this to tear down an on-demand tunnel; it tells you when the tunnel no longer has substreams in use. (Your app could still be sending/receiving messages over the tunnel itself, however.)
+* Event: `'close'` — currently, this is only emitted when the tunnel is explicitly `.destroy()`ed on the local side. [TODO?](https://github.com/natevw/streamplex/issues/2)
+* Event: `'message'` — emitted with one `(message)` parameter after the remote side has sent a message.
 * `tunnel.sendMessage(message)` — sends a copy of the provided `message` object (must be a JSON-serializable value) to the remote side, where it will be emitted via the `'message'` event above.
-* `tunnel.on('stream', handler)` — event emitted as `handler(substream, name)` after the remote side has created a stream. `substream` is a [stream.Duplex](http://nodejs.org/api/stream.html#stream_class_stream_duplex_1) instance and `name` is the name if one was provided.
-* `tunnel.destroy([error])` — destroys all substreams on the tunnel, optionally after emitting an error. Useful for propagating errors from your underlying transport.
+* `tunnel.destroy([error])` — destroys all substreams on the tunnel, optionally after emitting an error. Useful for propagating errors from your underlying transport. The `error` parameter is optional; without it, this method amounts to a request to "shut down" the tunnel and any remaining substreams.
+
+Substream methods/events:
+
 * `substream = tunnel.createStream([name|opts])` — returns a [stream.Duplex](http://nodejs.org/api/stream.html#stream_class_stream_duplex_1) instance ready for use. Data piped in to this substream will be read from its remote counterpart; data written remotely will flow out of this substream. `name` is optional, and need not be unique — it is simply a string that can be provided to the `'stream'` event handler. Alternatively, you may pass an options object to the underlying `stream.Duplex` (or custom subclass), including a `name` property if desired.
 * `substream.remoteEmit(name, …)` — the remote counterpart of this substream is an [events.EventEmitter](http://nodejs.org/api/events.html#events_class_events_eventemitter), and calling this method locally causes the `name`d event to fire there with any provided arguments. Note that all additional arguments passed in `…` must be JSON-serializable.
 * `substream.destroy()` — you may use this to prevent any further I/O on the substream after errors. Note that to close normally, you should simply call the underlying [`stream.Writable.prototype.end` method](http://nodejs.org/api/stream.html#stream_writable_end_chunk_encoding_callback) method instead of this.
 
-That's pretty much it. Substreams (and the tunnel itself) should emit all the usual stream events — note that any `'error'` is fatal within its context — replace any substream that errors, or connect a new pair of tunnel instances if one of them should error.
+Substreams (and the tunnel itself) should emit all the usual stream events — note that any `'error'` is fatal within its context — replace any substream that errors, or connect a new pair of tunnel instances if one of them should error.
 
 ## Streamplex tunnel options
 
